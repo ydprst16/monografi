@@ -1,5 +1,4 @@
 <?php
-echo "PHP OK";
 session_start();
 include 'conn.php';
 ?>
