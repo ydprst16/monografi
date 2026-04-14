@@ -1,0 +1,176 @@
+body {
+  font-family: "Arial", sans-serif;
+  background-image: url("../images/bg6.jpg");
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.login-container {
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  width: 350px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.logo {
+  width: 120px;
+  margin-bottom: 20px;
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 24px;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+  border-color: #2c3e50;
+  outline: none;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  box-sizing: border-box;
+}
+
+button:hover {
+  background-color: #2c3e50;
+}
+
+.error {
+  color: red;
+  margin-bottom: 10px;
+  font-size: 14px;
+  background: #ffe6e6;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.success {
+  color: green;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+p.forgot-password {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+p.forgot-password a {
+  color: #2c3e50;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+p.forgot-password a:hover {
+  text-decoration: underline;
+}
+
+/* Modal Styles */
+#forgotPasswordModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  overflow: auto;
+}
+
+#forgotPasswordModal.show {
+  display: block;
+}
+
+#forgotPasswordModal .modal-content {
+  background-color: white;
+  margin: 100px auto;
+  padding: 20px;
+  width: 320px;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  font-family: Arial, sans-serif;
+}
+
+#forgotPasswordModal h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+#forgotPasswordModal input[type="text"],
+#forgotPasswordModal input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+#forgotPasswordModal button {
+  width: 100%;
+  padding: 10px;
+  background-color: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+#forgotPasswordModal button:hover {
+  background-color: #2c3e50;
+}
+
+#forgotPasswordModal .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.3s;
+}
+
+#forgotPasswordModal .close-btn:hover {
+  color: #333;
+}

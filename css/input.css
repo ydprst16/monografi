@@ -1,0 +1,115 @@
+/* Reset default margin and padding */
+body,
+h3,
+label,
+input,
+select,
+textarea {
+  margin: 10;
+  padding: 10;
+}
+
+body {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+  color: #333;
+  position: relative;
+  /* Untuk posisi logo */
+}
+
+.form-sidebar {
+  width: 250px;
+  background-color: #f8f9fa;
+  padding: 20px 0;
+  height: 100vh;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  position: fixed;
+}
+
+.form-sidebar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.form-sidebar li {
+  padding: 12px 20px;
+  border-bottom: 1px solid #e1e1e1;
+}
+
+.form-sidebar li:last-child {
+  border-bottom: none;
+}
+
+.form-sidebar li a {
+  text-decoration: none;
+  color: #333;
+  display: flex;
+  /* tambahkan ini */
+  align-items: center;
+  /* sejajarkan vertikal */
+  font-size: 14px;
+  gap: 10px;
+}
+
+.form-sidebar li a:hover {
+  color: #007bff;
+  background-color: #e9ecef;
+}
+
+.main-content {
+  margin-left: 250px;
+  margin-top: 60px;
+  padding: 20px;
+  width: calc(100% - 250px);
+}
+
+.header-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.btn {
+  padding: 8px 15px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-back {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-print {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-logout {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+}
+
+.page-title {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.sidebar-brand {
+  font-size: 18px;
+  font-weight: bold;
+  /*color: #007bff;*/
+  padding: 15px 20px;
+  border-bottom: 1px solid #e1e1e1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
