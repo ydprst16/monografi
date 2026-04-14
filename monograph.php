@@ -116,13 +116,16 @@ function tf($label, $value)
         <div class="flex gap-2">
             <button onclick="window.print()"
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium shadow hover:bg-blue-700 transition">
-                Cetak
+                Cetak PDF
             </button>
 
-            <button
-                class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium shadow hover:bg-green-700 transition">
-                Word
-            </button>
+            <form action="buku_monograph.php" method="get" target="_blank">
+                <input type="hidden" name="kelurahan" value="<?= htmlspecialchars($kelurahan) ?>">
+                <button type="submit"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium shadow hover:bg-green-700 transition">
+                    Unduh Word
+                </button>
+            </form>
         </div>
 
     </div>
