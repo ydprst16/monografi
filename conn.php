@@ -1,9 +1,9 @@
 <?php
-$host = getenv('MYSQLHOST');
-$user = getenv('MYSQLUSER');
-$pass = getenv('MYSQLPASSWORD');
-$db = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
+$host = getenv('monorail.proxy.rlwy.net');
+$user = getenv('root');
+$pass = getenv('AwlpHBTfGfDsroRSYEvLpudBuwfdylJB');
+$db = getenv('railway');
+$port = getenv('32039');
 
 // fallback localhost
 if (!$host) {
