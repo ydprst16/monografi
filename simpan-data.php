@@ -1,11 +1,13 @@
 <?php
-// var_dump($_POST);
-// exit;
 session_start();
 include 'conn.php';
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+include 'helper.php';
 
+/* =========================
+   ROLE & REDIRECT
+========================= */
 $role = $_SESSION['role'] ?? '';
-
 $redirect = ($role == 'admin') ? 'dashboard-admin.php' :
     (($role == 'operator') ? 'dashboard-operator.php' : 'index.php');
 
@@ -21,34 +23,45 @@ if (!$wilayah_id) {
 }
 
 /* =========================
+   MONOGRAFI (KEY UTAMA)
+========================= */
+$tahun = $_POST['tahun'] ?? date('Y');
+$bulan = $_POST['bulan'] ?? '';
+
+$monografi_id = createMonografiIfNotExist($conn, $wilayah_id, $tahun, $bulan);
+
+/* =========================
    FUNCTION UPSERT
 ========================= */
-function saveOrUpdate($conn, $table, $data, $wilayah_id)
+function saveOrUpdate($conn, $table, $data, $monografi_id)
 {
-    $check = $conn->prepare("SELECT id FROM $table WHERE wilayah_id = ?");
-    $check->bind_param("i", $wilayah_id);
+    $check = $conn->prepare("SELECT id FROM $table WHERE monografi_id = ?");
+    $check->bind_param("i", $monografi_id);
     $check->execute();
     $res = $check->get_result();
 
     if ($row = $res->fetch_assoc()) {
+
         // UPDATE
         $fields = [];
         foreach ($data as $key => $val) {
             $fields[] = "$key = ?";
         }
 
-        $sql = "UPDATE $table SET " . implode(",", $fields) . " WHERE wilayah_id = ?";
+        $sql = "UPDATE $table SET " . implode(",", $fields) . " WHERE monografi_id = ?";
         $stmt = $conn->prepare($sql);
 
         $types = str_repeat("s", count($data)) . "i";
         $params = array_values($data);
-        $params[] = $wilayah_id;
+        $params[] = $monografi_id;
 
         $stmt->bind_param($types, ...$params);
         $stmt->execute();
+
     } else {
+
         // INSERT
-        $data['wilayah_id'] = $wilayah_id;
+        $data['monografi_id'] = $monografi_id;
 
         $fields = implode(",", array_keys($data));
         $placeholders = implode(",", array_fill(0, count($data), "?"));
@@ -81,7 +94,7 @@ try {
         'jarak_pusat_pemerintahan_kota' => $_POST['jarak_pusat_pemerintahan_kota'] ?? null,
         'jarak_ibukota_kabupaten' => $_POST['jarak_ibukota_kabupaten'] ?? null,
         'jarak_ibukota_provinsi' => $_POST['jarak_ibukota_provinsi'] ?? null,
-    ], $wilayah_id);
+    ], $monografi_id);
 
     /* =========================
        2. DEMOGRAFI
@@ -96,7 +109,7 @@ try {
         'jumlah_penduduk_miskin_kk' => $_POST['jumlah_penduduk_miskin_kk'] ?? null,
         'jumlah_penduduk_miskin_jiwa' => $_POST['jumlah_penduduk_miskin_jiwa'] ?? null,
         'umr_kabupaten_kota' => $_POST['umr_kabupaten_kota'] ?? null,
-    ], $wilayah_id);
+    ], $monografi_id);
 
     /* =========================
        3. SARANA
@@ -116,32 +129,51 @@ try {
         'kesenian_budaya' => $_POST['kesenian_budaya'] ?? 0,
         'balai_pertemuan' => $_POST['balai_pertemuan'] ?? 0,
         'sarana_lainnya' => $_POST['sarana_lainnya'] ?? null,
-    ], $wilayah_id);
+    ], $monografi_id);
 
     /* =========================
-       4. SARANA DETAIL (ANTI DUPLIKAT)
-    ========================= */
-    $conn->query("DELETE FROM sarana_detail WHERE wilayah_id = $wilayah_id");
+   4. SARANA DETAIL (FIX FINAL)
+========================= */
 
-    $jenis_list = [
-        'masjid',
-        'mushola',
-        'gereja',
-        'pura',
-        'vihara',
-        'klenteng',
-        'olahraga',
-        'kesenian_budaya',
-        'balai_pertemuan'
-    ];
+    // ambil sarana_id berdasarkan monografi
+    $stmt = $conn->prepare("SELECT id FROM sarana WHERE monografi_id = ?");
+    $stmt->bind_param("i", $monografi_id);
+    $stmt->execute();
+    $sarana = $stmt->get_result()->fetch_assoc();
 
-    foreach ($jenis_list as $jenis) {
-        $arr = $_POST[$jenis . '_nama'] ?? [];
-        foreach ($arr as $nama) {
-            if (!empty($nama)) {
-                $stmt = $conn->prepare("INSERT INTO sarana_detail (wilayah_id, jenis, nama) VALUES (?, ?, ?)");
-                $stmt->bind_param("iss", $wilayah_id, $jenis, $nama);
-                $stmt->execute();
+    $sarana_id = $sarana['id'] ?? null;
+
+    if ($sarana_id) {
+
+        // HAPUS DATA LAMA (pakai sarana_id, bukan monografi_id)
+        $stmt = $conn->prepare("DELETE FROM sarana_detail WHERE sarana_id = ?");
+        $stmt->bind_param("i", $sarana_id);
+        $stmt->execute();
+
+        $jenis_list = [
+            'masjid',
+            'mushola',
+            'gereja',
+            'pura',
+            'vihara',
+            'klenteng',
+            'olahraga',
+            'kesenian_budaya',
+            'balai_pertemuan'
+        ];
+
+        foreach ($jenis_list as $jenis) {
+            $arr = $_POST[$jenis . '_nama'] ?? [];
+
+            foreach ($arr as $nama) {
+                if (!empty($nama)) {
+                    $stmt = $conn->prepare("
+                    INSERT INTO sarana_detail (sarana_id, jenis, nama)
+                    VALUES (?, ?, ?)
+                ");
+                    $stmt->bind_param("iss", $sarana_id, $jenis, $nama);
+                    $stmt->execute();
+                }
             }
         }
     }
@@ -163,7 +195,7 @@ try {
         'bantuan_sumber_lain' => $_POST['bantuan_sumber_lain'] ?? null,
         'bulan' => $_POST['bulan'] ?? null,
         'tahun' => $_POST['tahun'] ?? null,
-    ], $wilayah_id);
+    ], $monografi_id);
 
     /* =========================
        6. PENDIDIKAN
@@ -186,7 +218,7 @@ try {
         'prasarana_smp' => $_POST['prasarana_smp'] ?? null,
         'prasarana_sma' => $_POST['prasarana_sma'] ?? null,
         'prasarana_pt' => $_POST['prasarana_pt'] ?? null,
-    ], $wilayah_id);
+    ], $monografi_id);
 
     /* =========================
        7. APARATUR
@@ -212,13 +244,7 @@ try {
         'karang_taruna_pengurus' => $_POST['karang_taruna_pengurus'] ?? null,
         'lembaga_adat' => $_POST['lembaga_adat'] ?? null,
         'lembaga_lainnya' => $_POST['lembaga_lainnya'] ?? null,
-    ], $wilayah_id);
-
-    /* =========================
-       SUCCESS
-    ========================= */
-    // header("Location: $redirect?status=success");
-    // exit;
+    ], $monografi_id);
 
     $_SESSION['notif'] = 'success';
     header("Location: $redirect");
@@ -226,10 +252,5 @@ try {
 
 } catch (Exception $e) {
 
-    //header("Location: $redirect?status=error");
-    //exit;
-
-    $_SESSION['notif'] = 'error';
-    header("Location: $redirect");
-    exit;
+    die("ERROR SIMPAN: " . $e->getMessage());
 }

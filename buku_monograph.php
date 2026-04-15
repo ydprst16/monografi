@@ -1,5 +1,8 @@
 <?php
 include 'auth.php';
+include 'helper.php';
+
+
 
 require_once __DIR__ . '/lib/PhpWord/bootstrap.php';
 require_once 'conn.php';
@@ -34,20 +37,15 @@ if (!$wilayah)
 
 $wilayah_id = $wilayah['id'];
 
-function getData($conn, $table, $key, $id)
-{
-    $stmt = $conn->prepare("SELECT * FROM $table WHERE $key = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc();
-}
+$tahun = $_GET['tahun'] ?? date('Y');
+$monografi_id = getMonografiId($conn, $wilayah_id, $tahun);
 
-$demografi = getData($conn, 'demografi', 'wilayah_id', $wilayah_id);
-$batas_jarak = getData($conn, 'wilayah_batas_jarak', 'wilayah_id', $wilayah_id);
-$sarana = getData($conn, 'sarana', 'wilayah_id', $wilayah_id);
-$pendidikan = getData($conn, 'sarana_detail', 'wilayah_id', $wilayah_id);
-$program_bantuan = getData($conn, 'program_bantuan', 'wilayah_id', $wilayah_id);
-$aparatur_lembaga = getData($conn, 'aparatur_lembaga', 'wilayah_id', $wilayah_id);
+$demografi = getData($conn, 'demografi', $monografi_id);
+$batas_jarak = getData($conn, 'wilayah_batas_jarak', $monografi_id);
+$sarana = getData($conn, 'sarana', $monografi_id);
+$pendidikan = getData($conn, 'pendidikan', $monografi_id);
+$program_bantuan = getData($conn, 'program_bantuan', $monografi_id);
+$aparatur_lembaga = getData($conn, 'aparatur_lembaga', $monografi_id);
 
 // Mulai membuat dokumen Word
 $phpWord = new PhpWord();

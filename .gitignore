@@ -12,9 +12,7 @@
 .DS_Store
 Thumbs.db
 
-# Editor
 .vscode/
 .idea/
 
-# Uploads (kalau nanti ada)
 uploads/

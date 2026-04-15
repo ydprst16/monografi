@@ -10,7 +10,7 @@ if (!$host) {
     $host = "localhost";
     $user = "root";
     $pass = "";
-    $db = "monograph_kelurahan";
+    $db = "mgr-edit";
     $port = 3306;
 }
 

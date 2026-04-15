@@ -1,21 +1,18 @@
 <?php
 include 'auth.php';
 include 'conn.php';
+include 'helper.php';
 
+/* =========================
+   GET PARAM
+========================= */
 $kelurahan = $_GET['kelurahan'] ?? '';
 if (!$kelurahan)
     die("Kelurahan tidak dipilih");
 
-// ================= FUNCTION =================
-function getData($conn, $table, $id)
-{
-    $stmt = $conn->prepare("SELECT * FROM $table WHERE wilayah_id = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc() ?? [];
-}
-
-// ================= DATA =================
+/* =========================
+   AMBIL DATA WILAYAH
+========================= */
 $stmt = $conn->prepare("SELECT * FROM wilayah WHERE kelurahan = ?");
 $stmt->bind_param("s", $kelurahan);
 $stmt->execute();
@@ -24,24 +21,61 @@ $wilayah = $stmt->get_result()->fetch_assoc();
 if (!$wilayah)
     die("Data tidak ditemukan");
 
-$batas_jarak = getData($conn, 'wilayah_batas_jarak', $wilayah['id']);
-$demografi = getData($conn, 'demografi', $wilayah['id']);
-$sarana = getData($conn, 'sarana', $wilayah['id']);
-$pendidikan = getData($conn, 'pendidikan', $wilayah['id']);
-$program_bantuan = getData($conn, 'program_bantuan', $wilayah['id']);
-$aparatur_lembaga = getData($conn, 'aparatur_lembaga', $wilayah['id']);
+/* =========================
+   MONOGRAFI FLOW (WAJIB)
+========================= */
+$wilayah_id = $wilayah['id'];
+$tahun = $_GET['tahun'] ?? date('Y');
+$monografi_id = getMonografiId($conn, $wilayah_id, $tahun);
 
+/* fallback */
+$monografi_id = $monografi_id ?? 0;
+
+/* =========================
+   LOAD DATA
+========================= */
+$batas_jarak = getData($conn, 'wilayah_batas_jarak', $monografi_id);
+$demografi = getData($conn, 'demografi', $monografi_id);
+$sarana = getData($conn, 'sarana', $monografi_id);
+$pendidikan = getData($conn, 'pendidikan', $monografi_id);
+$program_bantuan = getData($conn, 'program_bantuan', $monografi_id);
+$aparatur_lembaga = getData($conn, 'aparatur_lembaga', $monografi_id);
+
+/* =========================
+   ANTICRASH
+========================= */
+$batas_jarak = $batas_jarak ?? [];
+$demografi = $demografi ?? [];
+$sarana = $sarana ?? [];
+$pendidikan = $pendidikan ?? [];
+$program_bantuan = $program_bantuan ?? [];
+$aparatur_lembaga = $aparatur_lembaga ?? [];
+
+/* =========================
+   HELPER TAMPILAN
+========================= */
 function tf($label, $value)
 {
-    $value = ($value === null || $value === '') ? '-' : $value;
+    $value = ($value ?? '') === '' ? '-' : $value;
     ?>
-    <div class="flex justify-between border-b border-gray-90 py-[3px] gap-2 hover:bg-gray-50 px-1 rounded">
-        <span class="text-gray-700"><?= $label ?></span>
-        <span class="text-gray-900"><?= htmlspecialchars($value) ?></span>
+    <div class="flex justify-between border-b py-1 px-1 hover:bg-gray-50 rounded">
+        <span>
+            <?= $label ?>
+        </span>
+        <span>
+            <?= htmlspecialchars($value) ?>
+        </span>
     </div>
-<?php }
-
+    <?php
+}
+function val($arr, $key, $suffix = '')
+{
+    return isset($arr[$key]) && $arr[$key] !== ''
+        ? $arr[$key] . $suffix
+        : null;
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="id">
@@ -105,10 +139,12 @@ function tf($label, $value)
                     LAPORAN MONOGRAFI
                 </div>
                 <div class="text-sm text-gray-600">
-                    Kelurahan <?= strtoupper($wilayah['kelurahan']) ?>
+                    Kelurahan
+                    <?= strtoupper($wilayah['kelurahan']) ?>
                 </div>
                 <div class="text-[11px] text-gray-400">
-                    <?= $program_bantuan['bulan'] ?? '-' ?> <?= $program_bantuan['tahun'] ?? '-' ?>
+                    <?= $program_bantuan['bulan'] ?? '-' ?>
+                    <?= $program_bantuan['tahun'] ?? '-' ?>
                 </div>
             </div>
         </div>
@@ -172,7 +208,7 @@ function tf($label, $value)
 
                 <h3 class="font-bold uppercase mb-1">Jumlah Penduduk</h3>
                 <?php
-                tf('Laki-laki', $demografi['jumlah_penduduk_laki_laki'] . ' org');
+                tf('Laki-laki', ($demografi['jumlah_penduduk_laki_laki'] ?? '-') . ' org');
                 tf('Perempuan', $demografi['jumlah_penduduk_perempuan'] . ' org');
                 tf('0-15', $demografi['jumlah_penduduk_usia_0_15'] . ' org');
                 tf('15-65', $demografi['jumlah_penduduk_usia_15_65'] . ' org');
@@ -191,8 +227,8 @@ function tf($label, $value)
                 <?php
                 tf(
                     'Jumlah Penduduk Miskin',
-                    $demografi['jumlah_penduduk_miskin_kk'] . ' KK / ' .
-                    $demografi['jumlah_penduduk_miskin_jiwa'] . ' Jiwa'
+                    val($demografi, 'jumlah_penduduk_miskin_kk', ' KK') . ' / ' .
+                    val($demografi, 'jumlah_penduduk_miskin_jiwa', ' Jiwa')
                 );
                 tf('UMR (Rp.)', $demografi['umr_kabupaten_kota']);
                 ?>
@@ -221,12 +257,12 @@ function tf($label, $value)
 
                 <h3 class="font-bold uppercase mb-1">Prasarana Pendidikan</h3>
                 <?php
-                tf('PAUD', $pendidikan['prasarana_paud']);
-                tf('TK', $pendidikan['prasarana_tk']);
-                tf('SD', $pendidikan['prasarana_sd']);
-                tf('SMP', $pendidikan['prasarana_smp']);
-                tf('SMA', $pendidikan['prasarana_sma']);
-                tf('Perguruan Tinggi', $pendidikan['prasarana_pt']);
+                tf('PAUD', val($pendidikan, 'prasarana_paud'));
+                tf('TK', val($pendidikan, 'prasarana_tk'));
+                tf('SD', val($pendidikan, 'prasarana_sd'));
+                tf('SMP', val($pendidikan, 'prasarana_smp'));
+                tf('SMA', val($pendidikan, 'prasarana_sma'));
+                tf('Perguruan Tinggi', val($pendidikan, 'prasarana_pt'));
                 ?>
 
                 <h3 class="font-bold uppercase mb-1">Prasarana Umum</h3>
@@ -264,19 +300,19 @@ function tf($label, $value)
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Aparatur</h3>
                 <?php
-                tf('Lurah', $aparatur_lembaga['nama_lurah']);
-                tf('Sekretaris', $aparatur_lembaga['nama_sekretaris']);
-                tf('Gol I', $aparatur_lembaga['golongan_i'] . ' org');
-                tf('Gol II', $aparatur_lembaga['golongan_ii'] . ' org');
-                tf('Gol III', $aparatur_lembaga['golongan_iii'] . ' org');
-                tf('Gol IV', $aparatur_lembaga['golongan_iv'] . ' org');
+                tf('Lurah', val($aparatur_lembaga, 'nama_lurah'));
+                tf('Sekretaris', val($aparatur_lembaga, 'nama_sekretaris'));
+                tf('Gol I', val($aparatur_lembaga, 'golongan_i', ' org'));
+                tf('Gol II', val($aparatur_lembaga, 'golongan_ii', ' org'));
+                tf('Gol III', val($aparatur_lembaga, 'golongan_iii', ' org'));
+                tf('Gol IV', val($aparatur_lembaga, 'golongan_iv', ' org'));
                 ?>
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Program</h3>
                 <?php
-                tf('Pusat', $program_bantuan['program_pusat']);
-                tf('Provinsi', $program_bantuan['program_provinsi']);
-                tf('Kab/Kota', $program_bantuan['program_kabupaten']);
+                tf('Pusat', val($program_bantuan, 'program_pusat'));
+                tf('Provinsi', val($program_bantuan, 'program_provinsi'));
+                tf('Kab/Kota', val($program_bantuan, 'program_kabupaten'));
                 ?>
             </div>
         </div>
@@ -300,20 +336,20 @@ function tf($label, $value)
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Kelembagaan</h3>
                 <?php
-                tf('LPM Pengurus', $aparatur_lembaga['lpm_pengurus']);
-                tf('LPM Kegiatan', $aparatur_lembaga['lpm_kegiatan']);
-                tf('LPM Buku', $aparatur_lembaga['lpm_buku_administrasi']);
-                tf('LPM Dana', $aparatur_lembaga['lpm_dana']);
-                tf('PKK Pengurus', $aparatur_lembaga['tp_pkk_pengurus']);
-                tf('PKK Kegiatan', $aparatur_lembaga['tp_pkk_kegiatan']);
-                tf('PKK Buku', $aparatur_lembaga['tp_pkk_buku']);
-                tf('PKK Dana', $aparatur_lembaga['tp_pkk_dana']);
-                tf('RT', $aparatur_lembaga['rt'] . ' RT');
-                tf('Penghasilan RT', $aparatur_lembaga['penghasilan_rt']);
-                tf('Karang Taruna', $aparatur_lembaga['karang_taruna_jumlah']);
-                tf('Pengurus', $aparatur_lembaga['karang_taruna_pengurus']);
-                tf('Adat', $aparatur_lembaga['lembaga_adat']);
-                tf('Lainnya', $aparatur_lembaga['lembaga_lainnya']);
+                tf('LPM Pengurus', val($aparatur_lembaga, 'lpm_pengurus'));
+                tf('LPM Kegiatan', val($aparatur_lembaga, 'lpm_kegiatan'));
+                tf('LPM Buku', val($aparatur_lembaga, 'lpm_buku_administrasi'));
+                tf('LPM Dana', val($aparatur_lembaga, 'lpm_dana'));
+                tf('PKK Pengurus', val($aparatur_lembaga, 'tp_pkk_pengurus'));
+                tf('PKK Kegiatan', val($aparatur_lembaga, 'tp_pkk_kegiatan'));
+                tf('PKK Buku', val($aparatur_lembaga, 'tp_pkk_buku'));
+                tf('PKK Dana', val($aparatur_lembaga, 'tp_pkk_dana'));
+                tf('RT', val($aparatur_lembaga, 'rt', ' RT'));
+                tf('Penghasilan RT', val($aparatur_lembaga, 'penghasilan_rt'));
+                tf('Karang Taruna', val($aparatur_lembaga, 'karang_taruna_jumlah'));
+                tf('Pengurus', val($aparatur_lembaga, 'karang_taruna_pengurus'));
+                tf('Adat', val($aparatur_lembaga, 'lembaga_adat'));
+                tf('Lainnya', val($aparatur_lembaga, 'lembaga_lainnya'));
                 ?>
             </div>
         </div>

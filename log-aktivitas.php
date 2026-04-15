@@ -67,10 +67,10 @@ WHERE aktivitas LIKE '%password%'
     <meta charset="UTF-8">
     <title>Log Aktivitas</title>
 
-    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
 
 </head>
 
@@ -78,61 +78,8 @@ WHERE aktivitas LIKE '%password%'
 
     <div class="wrapper">
 
-        <!-- Navbar -->
-        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
-                </li>
-            </ul>
-
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a href="logout.php" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                </li>
-            </ul>
-        </nav>
-
-        <!-- Sidebar -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
-
-            <a href="dashboard-admin.php" class="brand-link">
-                <img src="images/logo.png" class="brand-image img-circle elevation-3">
-                <span class="brand-text font-weight-light">Monografi</span>
-            </a>
-
-            <div class="sidebar">
-
-                <nav class="mt-2">
-
-                    <ul class="nav nav-pills nav-sidebar flex-column">
-
-                        <li class="nav-item">
-                            <a href="dashboard-admin.php" class="nav-link">
-                                <i class="nav-icon fas fa-home"></i>
-                                <p>Monografi Kelurahan</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="kelola-operator.php" class="nav-link">
-                                <i class="nav-icon fas fa-users-cog"></i>
-                                <p>Kelola Operator</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="log-aktivitas.php" class="nav-link active">
-                                <i class="nav-icon fas fa-history"></i>
-                                <p>Log Aktivitas</p>
-                            </a>
-                        </li>
-
-                    </ul>
-
-                </nav>
-            </div>
-        </aside>
+        <?php include 'layout/header.php'; ?>
+        <?php include 'layout/sidebar.php'; ?>
 
         <!-- Content -->
 
@@ -145,7 +92,6 @@ WHERE aktivitas LIKE '%password%'
                 </div>
 
             </section>
-
 
             <section class="content">
 
@@ -210,7 +156,6 @@ WHERE aktivitas LIKE '%password%'
 
                     </div>
 
-
                     <!-- Filter -->
 
                     <form method="GET" class="mb-3">
@@ -271,7 +216,6 @@ WHERE aktivitas LIKE '%password%'
 
                     </form>
 
-
                     <!-- Table -->
 
                     <div class="card">
@@ -280,9 +224,9 @@ WHERE aktivitas LIKE '%password%'
                             <h3 class="card-title">Riwayat Aktivitas</h3>
                         </div>
 
-                        <div class="card-body table-responsive">
+                        <div class="card-body">
 
-                            <table class="table table-bordered table-striped">
+                            <table id="logTable" class="table table-bordered table-hover">
 
                                 <thead>
 
@@ -336,23 +280,32 @@ WHERE aktivitas LIKE '%password%'
 
         </div>
 
-
-        <footer class="main-footer">
-
-            <strong>
-                &copy; 2025 IPDS BPS KOTA DUMAI
-            </strong>
-
-        </footer>
+        <!-- FOOTER  -->
+        <?php include 'layout/footer.php'; ?>
 
     </div>
-
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+
+
+    <script>
+        $(function () {
+            $('#logTable').DataTable({
+                "pageLength": 10, // 🔥 ini kunci utama
+                "lengthMenu": [10, 25, 50, 100],
+                "ordering": true,
+                "searching": true,
+                "responsive": true,
+                "autoWidth": false
+            });
+        });
+    </script>
 
 </body>
 
