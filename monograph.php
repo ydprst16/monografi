@@ -187,7 +187,7 @@ function val($arr, $key, $suffix = '')
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Data Umum</h3>
                 <?php
-                tf('Tipologi', $batas_jarak['tipologi_kelurahan']);
+                tf('Tipologi', val($batas_jarak, 'tipologi_kelurahan'));
                 tf('Luas', isset($batas_jarak['luas_wilayah'])
                     ? floatval($batas_jarak['luas_wilayah']) . ' km²'
                     : '-');
@@ -195,10 +195,10 @@ function val($arr, $key, $suffix = '')
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Batas</h3>
                 <?php
-                tf('Utara', $batas_jarak['batas_wilayah_utara']);
-                tf('Selatan', $batas_jarak['batas_wilayah_selatan']);
-                tf('Barat', $batas_jarak['batas_wilayah_barat']);
-                tf('Timur', $batas_jarak['batas_wilayah_timur']);
+                tf('Utara', val($batas_jarak, 'batas_wilayah_utara'));
+                tf('Selatan', val($batas_jarak, 'batas_wilayah_selatan'));
+                tf('Barat', val($batas_jarak, 'batas_wilayah_barat'));
+                tf('Timur', val($batas_jarak, 'batas_wilayah_timur'));
                 ?>
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Jarak dari Pusat Pemerintahan</h3>
@@ -211,10 +211,10 @@ function val($arr, $key, $suffix = '')
                 <h3 class="font-bold uppercase mb-1">Jumlah Penduduk</h3>
                 <?php
                 tf('Laki-laki', ($demografi['jumlah_penduduk_laki_laki'] ?? '-') . ' org');
-                tf('Perempuan', $demografi['jumlah_penduduk_perempuan'] . ' org');
-                tf('0-15', $demografi['jumlah_penduduk_usia_0_15'] . ' org');
-                tf('15-65', $demografi['jumlah_penduduk_usia_15_65'] . ' org');
-                tf('>65', $demografi['jumlah_penduduk_usia_65_keatas'] . ' org');
+                tf('Perempuan', val($demografi, 'jumlah_penduduk_perempuan', ' org'));
+                tf('0-15', val($demografi, 'jumlah_penduduk_usia_0_15', ' org'));
+                tf('15-65', val($demografi, 'jumlah_penduduk_usia_15_65', ' org'));
+                tf('>65', val($demografi, 'jumlah_penduduk_usia_65_keatas', ' org'));
                 //echo '<br>';
                 tf('Mayoritas Pekerjaan', $demografi['mayoritas_pekerjaan']);
                 ?>
@@ -232,24 +232,24 @@ function val($arr, $key, $suffix = '')
                     val($demografi, 'jumlah_penduduk_miskin_kk', ' KK') . ' / ' .
                     val($demografi, 'jumlah_penduduk_miskin_jiwa', ' Jiwa')
                 );
-                tf('UMR (Rp.)', $demografi['umr_kabupaten_kota']);
+                tf('UMR (Rp.)', val($demografi, 'umr_kabupaten_kota'));
                 ?>
 
                 <h3 class="mt-2 font-bold uppercase mb-1">Sarana Prasarana</h3>
                 <?php
-                tf('Kantor Kelurahan', $sarana['kantor_kelurahan']);
+                tf('Kantor Kelurahan', val($sarana, 'kantor_kelurahan'));
                 ?>
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Prasarana Kesehatan</h3>
                 <?php
-                tf('Puskesmas', $sarana['puskesmas']);
-                tf('Posyandu', $sarana['ukbm_posyandu']);
+                tf('Puskesmas', val($sarana, 'puskesmas'));
+                tf('Posyandu', val($sarana, 'ukbm_posyandu'));
                 tf('Poliklinik', $sarana['poliklinik']);
                 ?>
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Prasarana Ibadah</h3>
                 <?php
-                tf('Masjid', $sarana['masjid']);
+                tf('Masjid', val($sarana, 'masjid'));
                 tf('Mushola', $sarana['mushola']);
                 tf('Gereja', $sarana['gereja']);
                 tf('Pura', $sarana['pura']);
