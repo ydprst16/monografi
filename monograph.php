@@ -3,16 +3,11 @@ include 'auth.php';
 include 'conn.php';
 include 'helper.php';
 
-/* =========================
-   GET PARAM
-========================= */
+/* ========================= */
 $kelurahan = $_GET['kelurahan'] ?? '';
 if (!$kelurahan)
     die("Kelurahan tidak dipilih");
 
-/* =========================
-   AMBIL DATA WILAYAH
-========================= */
 $stmt = $conn->prepare("SELECT * FROM wilayah WHERE kelurahan = ?");
 $stmt->bind_param("s", $kelurahan);
 $stmt->execute();
@@ -21,58 +16,37 @@ $wilayah = $stmt->get_result()->fetch_assoc();
 if (!$wilayah)
     die("Data tidak ditemukan");
 
-/* =========================
-   MONOGRAFI FLOW (WAJIB)
-========================= */
 $wilayah_id = $wilayah['id'];
 $tahun = $_GET['tahun'] ?? date('Y');
-$monografi_id = getMonografiId($conn, $wilayah_id, $tahun);
+$monografi_id = getMonografiId($conn, $wilayah_id, $tahun) ?? 0;
 
-/* fallback */
-$monografi_id = $monografi_id ?? 0;
+/* ========================= */
+$batas_jarak = getData($conn, 'wilayah_batas_jarak', $monografi_id) ?? [];
+$demografi = getData($conn, 'demografi', $monografi_id) ?? [];
+$sarana = getData($conn, 'sarana', $monografi_id) ?? [];
+$pendidikan = getData($conn, 'pendidikan', $monografi_id) ?? [];
+$program_bantuan = getData($conn, 'program_bantuan', $monografi_id) ?? [];
+$aparatur_lembaga = getData($conn, 'aparatur_lembaga', $monografi_id) ?? [];
 
-/* =========================
-   LOAD DATA
-========================= */
-$batas_jarak = getData($conn, 'wilayah_batas_jarak', $monografi_id);
-$demografi = getData($conn, 'demografi', $monografi_id);
-$sarana = getData($conn, 'sarana', $monografi_id);
-$pendidikan = getData($conn, 'pendidikan', $monografi_id);
-$program_bantuan = getData($conn, 'program_bantuan', $monografi_id);
-$aparatur_lembaga = getData($conn, 'aparatur_lembaga', $monografi_id);
-
-/* =========================
-   ANTICRASH
-========================= */
-$batas_jarak = $batas_jarak ?? [];
-$demografi = $demografi ?? [];
-$sarana = $sarana ?? [];
-$pendidikan = $pendidikan ?? [];
-$program_bantuan = $program_bantuan ?? [];
-$aparatur_lembaga = $aparatur_lembaga ?? [];
-
-/* =========================
-   HELPER TAMPILAN
-========================= */
+/* ========================= */
 function tf($label, $value)
 {
-    $value = ($value ?? '') === '' ? '-' : $value;
+    $value = ($value === null || $value === '') ? '-' : $value;
     ?>
     <div class="flex justify-between border-b py-1 px-1 hover:bg-gray-50 rounded">
-        <span>
-            <?= $label ?>
-        </span>
-        <span>
-            <?= htmlspecialchars($value) ?>
-        </span>
+        <span><?= $label ?></span>
+        <span><?= htmlspecialchars($value) ?></span>
     </div>
     <?php
 }
+
 function val($arr, $key, $suffix = '')
 {
+    if (!is_array($arr))
+        return '-';
     return isset($arr[$key]) && $arr[$key] !== ''
         ? $arr[$key] . $suffix
-        : null;
+        : '-';
 }
 ?>
 
@@ -203,20 +177,19 @@ function val($arr, $key, $suffix = '')
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Jarak dari Pusat Pemerintahan</h3>
                 <?php
-                tf('Kecamatan', ($batas_jarak['jarak_pusat_pemerintahan_kecamatan'] ?? '-') . ' km');
-                tf('Kota', ($batas_jarak['jarak_pusat_pemerintahan_kota'] ?? '-') . ' km');
-                tf('Provinsi', ($batas_jarak['jarak_ibukota_provinsi'] ?? '-') . ' km');
+                tf('Kecamatan', val($batas_jarak, 'jarak_pusat_pemerintahan_kecamatan', ' km'));
+                tf('Kota', val($batas_jarak, 'jarak_pusat_pemerintahan_kota', ' km'));
+                tf('Provinsi', val($batas_jarak, 'jarak_ibukota_provinsi', ' km'));
                 ?>
 
                 <h3 class="font-bold uppercase mb-1">Jumlah Penduduk</h3>
                 <?php
-                tf('Laki-laki', ($demografi['jumlah_penduduk_laki_laki'] ?? '-') . ' org');
+                tf('Laki-laki', val($demografi, 'jumlah_penduduk_laki_laki', ' org'));
                 tf('Perempuan', val($demografi, 'jumlah_penduduk_perempuan', ' org'));
                 tf('0-15', val($demografi, 'jumlah_penduduk_usia_0_15', ' org'));
                 tf('15-65', val($demografi, 'jumlah_penduduk_usia_15_65', ' org'));
                 tf('>65', val($demografi, 'jumlah_penduduk_usia_65_keatas', ' org'));
-                //echo '<br>';
-                tf('Mayoritas Pekerjaan', $demografi['mayoritas_pekerjaan']);
+                tf('Mayoritas Pekerjaan', val($demografi, 'mayoritas_pekerjaan'));
                 ?>
             </div>
         </div>
@@ -227,12 +200,11 @@ function val($arr, $key, $suffix = '')
             <div class="overflow-y-auto pr-2 space-y-2">
                 <h3 class="mb-1 font-bold uppercase">Kemiskinan</h3>
                 <?php
-                tf(
-                    'Jumlah Penduduk Miskin',
-                    val($demografi, 'jumlah_penduduk_miskin_kk', ' KK') . ' / ' .
-                    val($demografi, 'jumlah_penduduk_miskin_jiwa', ' Jiwa')
-                );
-                tf('UMR (Rp.)', val($demografi, 'umr_kabupaten_kota'));
+                $kk = val($demografi, 'jumlah_penduduk_miskin_kk', ' KK');
+                $jiwa = val($demografi, 'jumlah_penduduk_miskin_jiwa', ' Jiwa');
+                tf('Penduduk Miskin', ($kk === '-' && $jiwa === '-') ? '-' : "$kk / $jiwa");
+
+                tf('UMR', val($demografi, 'umr_kabupaten_kota'));
                 ?>
 
                 <h3 class="mt-2 font-bold uppercase mb-1">Sarana Prasarana</h3>
@@ -244,17 +216,17 @@ function val($arr, $key, $suffix = '')
                 <?php
                 tf('Puskesmas', val($sarana, 'puskesmas'));
                 tf('Posyandu', val($sarana, 'ukbm_posyandu'));
-                tf('Poliklinik', $sarana['poliklinik']);
+                tf('Poliklinik', val($sarana, 'poliklinik'));
                 ?>
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Prasarana Ibadah</h3>
                 <?php
                 tf('Masjid', val($sarana, 'masjid'));
-                tf('Mushola', $sarana['mushola']);
-                tf('Gereja', $sarana['gereja']);
-                tf('Pura', $sarana['pura']);
-                tf('Vihara', $sarana['vihara']);
-                tf('Klenteng', $sarana['klenteng']);
+                tf('Mushola', val($sarana, 'mushola'));
+                tf('Gereja', val($sarana, 'gereja'));
+                tf('Pura', val($sarana, 'pura'));
+                tf('Vihara', val($sarana, 'vihara'));
+                tf('Klenteng', val($sarana, 'klenteng'));
                 ?>
 
                 <h3 class="font-bold uppercase mb-1">Prasarana Pendidikan</h3>
@@ -269,9 +241,9 @@ function val($arr, $key, $suffix = '')
 
                 <h3 class="font-bold uppercase mb-1">Prasarana Umum</h3>
                 <?php
-                tf('Olahraga', $sarana['olahraga']);
-                tf('Balai Pertemuan', $sarana['balai_pertemuan']);
-                tf('Kesenian/Budaya', $sarana['kesenian_budaya']);
+                tf('Olahraga', val($sarana, 'olahraga'));
+                tf('Balai', val($sarana, 'balai_pertemuan'));
+                tf('Budaya', val($sarana, 'kesenian_budaya'));
                 //tf('Lainnya', $sarana['sarana_lainnya']);
                 ?>
             </div>
@@ -283,13 +255,13 @@ function val($arr, $key, $suffix = '')
             <div class="overflow-y-auto pr-2 space-y-2">
                 <h3 class="font-bold uppercase mb-1">Lulusan Pendidikan Umum</h3>
                 <?php
-                tf('Taman Kanak-kanak', ($pendidikan['lulusan_tk'] ?? '') . ' orang');
-                tf('Sekolah Dasar', ($pendidikan['lulusan_sd'] ?? '') . ' orang');
-                tf('SMP', ($pendidikan['lulusan_smp'] ?? '') . ' orang');
-                tf('SMA/SMU', ($pendidikan['lulusan_sma'] ?? '') . ' orang');
-                tf('Akademi/D1-D3', ($pendidikan['lulusan_akademi'] ?? '') . ' orang');
-                tf('Sarjana', ($pendidikan['lulusan_sarjana'] ?? '') . ' orang');
-                tf('Pasca Sarjana', ($pendidikan['lulusan_pascasarjana'] ?? '') . ' orang');
+                tf('TK', val($pendidikan, 'lulusan_tk', ' org'));
+                tf('SD', val($pendidikan, 'lulusan_sd', ' org'));
+                tf('SMP', val($pendidikan, 'lulusan_smp', ' org'));
+                tf('SMA', val($pendidikan, 'lulusan_sma', ' org'));
+                tf('Akademi', val($pendidikan, 'lulusan_akademi', ' org'));
+                tf('Sarjana', val($pendidikan, 'lulusan_sarjana', ' org'));
+                tf('Pasca Sarjana', val($pendidikan, 'lulusan_pascasarjana', ' org'));
                 ?>
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Lulusan Pendidikan Khusus</h3>
