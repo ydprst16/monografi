@@ -188,7 +188,9 @@ function val($arr, $key, $suffix = '')
                 <h3 class="mt-2 mb-1 font-bold uppercase">Data Umum</h3>
                 <?php
                 tf('Tipologi', $batas_jarak['tipologi_kelurahan']);
-                tf('Luas', ($batas_jarak['luas_wilayah'] ?? '-') . ' km²');
+                tf('Luas', isset($batas_jarak['luas_wilayah'])
+                    ? floatval($batas_jarak['luas_wilayah']) . ' km²'
+                    : '-');
                 ?>
 
                 <h3 class="mt-2 mb-1 font-bold uppercase">Batas</h3>

@@ -269,7 +269,6 @@ $aparatur_lembaga = $aparatur_lembaga ?? [];
                         <label>Bulan</label>
                         <input class="form-control mb-2" name="bulan" value="<?= $program_bantuan['bulan'] ?? '' ?>">
 
-                        <label>Tahun</label>
                         <div class="text-end">
                             <button type="button" class="btn btn-primary btn-next">Lanjut</button>
                         </div>
@@ -294,7 +293,7 @@ $aparatur_lembaga = $aparatur_lembaga ?? [];
 
                                     <label>Luas Wilayah (km²)</label>
                                     <input type="number" step="0.01" class="form-control mb-3" name="luas_wilayah"
-                                        value="<?= htmlspecialchars($batas_jarak['luas_wilayah'] ?? '') ?>">
+                                        value="<?= isset($batas_jarak['luas_wilayah']) ? floatval($batas_jarak['luas_wilayah']) : '' ?>">
 
                                     <label>Batas Utara</label>
                                     <input type="text" class="form-control mb-3" name="batas_wilayah_utara"
@@ -943,9 +942,9 @@ $aparatur_lembaga = $aparatur_lembaga ?? [];
                                 </div>
 
                                 <div class="col-md-4 mb-3">
-                                    <label>Penghasilan RW (Rp)</label>
-                                    <input type="number" step="0.01" class="form-control" name="penghasilan_rw"
-                                        value="<?= htmlspecialchars($aparatur_lembaga['penghasilan_rw'] ?? '') ?>">
+                                    <label>Penghasilan RT (Rp)</label>
+                                    <input type="number" step="0.01" class="form-control" name="penghasilan_rt"
+                                        value="<?= htmlspecialchars($aparatur_lembaga['penghasilan_rt'] ?? '') ?>">
                                 </div>
 
                                 <div class="col-md-4 mb-3">

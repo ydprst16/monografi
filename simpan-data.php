@@ -239,7 +239,7 @@ try {
         'tp_pkk_buku' => $_POST['tp_pkk_buku'] ?? null,
         'tp_pkk_dana' => $_POST['tp_pkk_dana'] ?? null,
         'rt' => $_POST['rt'] ?? null,
-        'penghasilan_rw' => $_POST['penghasilan_rw'] ?? null,
+        'penghasilan_rt' => $_POST['penghasilan_rt'] ?? null,
         'karang_taruna_jumlah' => $_POST['karang_taruna_jumlah'] ?? null,
         'karang_taruna_pengurus' => $_POST['karang_taruna_pengurus'] ?? null,
         'lembaga_adat' => $_POST['lembaga_adat'] ?? null,
