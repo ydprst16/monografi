@@ -1,5 +1,10 @@
 <?php
 session_start();
+
+$_POST = array_map(function ($v) {
+    return ($v === '') ? null : $v;
+}, $_POST);
+
 include 'conn.php';
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 include 'helper.php';
